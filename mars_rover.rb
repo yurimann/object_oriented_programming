@@ -1,106 +1,124 @@
-$latitute = 0
-$longtitude = 0
 
 class Rover
+  @@latitute = 0
+  @@longtitude = 0
+  @@rovers = []
+  @@rover_id = 1
+  attr_accessor :latitude, :longtitude, :x_axis, :y_axis, :direction
+  attr_reader :rover_id
 
-  attr_accessor :latitude, :longtitude, :x_axis, :y_axis, :directions
+  def self.set_plateau
+    puts "Enter plateau size"
+    puts "Enter latitude size:"
+    width = gets.to_i
+    @@longtitude = width
+    puts "Enter longtitude size:"
+    height = gets.to_i
+    @@latitude = height
+    puts "Longtitude is #{@@longtitude} while latitude is #{@@latitude}"
+  end
 
   def initialize (x,y,z)
     @x_axis = x
     @y_axis = y
     @direction = z.upcase
+    @rover_id = @@rover_id
+    @@rover_id += 1
+    @@rovers << self
   end
 
-  def read_instruction(directions)
-    directions = directions.upcase.split(//)
-    directions.each do |d|
-      if d == "L" || d == "R"
-        turn(d)
-      else
-        move
+  def self.read_instruction(id, directions)
+    @@rovers.each do |rover|
+      if rover.rover_id == id
+        directions = directions.upcase.split(//)
+        directions.each do |d|
+          if d == "L" || d == "R"
+            turn(id, d)
+          else
+            move(id, d)
+          end
+        end
       end
     end
   end
 
-  def move
-    case @direction
-      when "N"
-        @y_axis += 1
-      when "E"
-        @x_axis += 1
-      when "S"
-        @y_axis -= 1
-      when "W"
-        @x_axis -= 1
-    end
-    output
-    if @y_axis >= $latitude + 1 || @y_axis < 0
-      "Error. You're out of bounds"
-    elsif @x_axis >= $longtitude +1 || @x_axis < 0
-      "Error. You're out of bounds"
+  def display
+    @@rovers.each do |rover|
+      puts "#{rover.rover_id}: Rover#{rover.rover_id}"
     end
   end
 
-  def turn(t)
-    case @direction
-      when "N"
-        if t == "L"
-          @direction = "W"
-        elsif t == "R"
-          @direction = "E"
+  def self.move(id, directions)
+    @@rovers.each do |rover|
+      if rover.rover_id == id
+        case rover.direction
+          when "N"
+            checker_y = rover.y_axis + 1
+          when "E"
+            checker_x = rover.x_axis + 1
+          when "S"
+            checker_y = rover.y_axis - 1
+          when "W"
+            checker_x = rover.x_axis - 1
         end
-      when "E"
-        if t == "L"
-          @direction = "N"
-        elsif t == "R"
-          @direction = "S"
-        end
-      when "S"
-        if t == "L"
-          @direction = "E"
-        elsif t == "R"
-          @direction = "W"
-        end
-      when "W"
-        if t == "L"
-          @direction = "S"
-        elsif t == "R"
-          @direction = "N"
+        if @@longtitude + 1 >= rover.y_axis || rover.y_axis <= -1
+          puts "Error. Rover out of bounds"
+          "Error. You're out of bounds"
+        elsif rover.x_axis >= @@latitude + 1 || rover.x_axis <= -1
+          puts "Error. Rover out of bounds"
+          "Error. You're out of bounds"
+        else
+          rover.y_axis = checker_y
+          rover.x_axis = checker_x
         end
       end
-      output
+    end
   end
-  def output
-    puts "#{@x_axis} #{@y_axis} #{@direction}"
+
+  def self.turn(id, directions)
+    @@rovers.each do |rover|
+      if rover.rover_id == id
+        case rover.direction
+          when "N"
+            if directions == "L"
+              rover.direction = "W"
+            elsif directions == "R"
+              rover.direction = "E"
+            end
+          when "E"
+            if directions == "L"
+              rover.direction = "N"
+            elsif directions == "R"
+              rover.direction = "S"
+            end
+          when "S"
+            if directions == "L"
+              rover.direction = "E"
+            elsif directions == "R"
+              rover.direction = "W"
+            end
+          when "W"
+            if directions == "L"
+              rover.direction = "S"
+            elsif directions == "R"
+              rover.direction = "N"
+            end
+        end
+      end
+    end
+  end
+
+  def self.output
+    @@rovers.each do |rover|
+      puts "Rover ID [#{rover.rover_id}] Latitude #{rover.x_axis} Longtitude #{rover.y_axis} Facing #{rover.direction}"
+    end
+  end
+
+  def self.plateau_size
+    puts "#{@@longtitude} #{@@latitude}"
   end
 end
 
-puts "Enter plateau size:"
-max = gets.gsub(/\s+/,"")
-$longtitude = max[0].to_i
-$latitude = max[1].to_i
-puts "Longtitude is #{$longtitude} while latitude is #{$latitude}"
-
-puts "Where is the rover now? (longtitude, latitude, then direction)"
-direction = gets.gsub(/\s+/,"")
-rover = Rover.new(direction[0].to_i, direction[1].to_i, direction[2].upcase)
-rover.output
-
-puts "Where do you want me to go?"
-where = gets.gsub(/\s+/,"")
-rover.read_instruction(where)
-
-puts "The rover's final location is:"
-rover.output
-
-puts "Where is the second rover now? (longtitude, latitude, then direction)"
-direction = gets.gsub(/\s+/,"")
-rover = Rover.new(direction[0].to_i, direction[1].to_i, direction[2].upcase)
-rover.output
-
-puts "Where do you want me to go?"
-where = gets.gsub(/\s+/,"")
-rover.read_instruction(where)
-
-puts "The rover's final location is:"
-rover.output
+test1 = Rover.new(2,2,"S")
+test2 = Rover.new(1,2,"N")
+test3 = Rover.new(3,3,"W")
